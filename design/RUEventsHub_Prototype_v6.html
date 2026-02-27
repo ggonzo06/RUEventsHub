@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RU Events Hub — Prototype v6</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --scarlet: #CC0033;
+  --scarlet-dim: rgba(204,0,51,0.08);
+  --scarlet-mid: rgba(204,0,51,0.15);
+  --white: #ffffff;
+  --gray-1: #f3f3f3;
+  --gray-2: #e2e2e2;
+  --gray-3: #aaaaaa;
+  --gray-4: #666666;
+  --dark: #0f0f0f;
+  --dark-2: #1c1c1e;
+  --dark-3: #2c2c2e;
+  --text: #181818;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #dcdcdc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 56px;
+  gap: 20px;
+}
+
+h1 { font-family:'DM Serif Display',serif; font-size:24px; color:var(--text); }
+h1 span { color:var(--scarlet); }
+.subtitle { font-size:12px; color:var(--gray-4); margin-top:3px; text-align:center; }
+
+.controls { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+.ctrl-btn {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; font-weight:600; color:var(--gray-4);
+  cursor:pointer; background:white;
+  border:1px solid var(--gray-2); border-radius:20px;
+  padding:7px 16px; transition:all 0.2s;
+  font-family:'DM Sans',sans-serif;
+}
+.ctrl-btn:hover { background:var(--gray-1); }
+
+/* ── Phone ── */
+.phone-row { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; justify-content:center; }
+.phone-wrapper { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.phone-label { font-size:10px; font-weight:700; color:var(--gray-4); text-transform:uppercase; letter-spacing:1px; }
+
+.phone {
+  width:295px; height:615px;
+  background:white;
+  border-radius:44px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 0 0 8px #1a1a1a, 0 0 0 9px #2a2a2a;
+  overflow:hidden; position:relative;
+  display:flex; flex-direction:column;
+  transition: box-shadow 0.3s;
+}
+
+.phone.dark { background:var(--dark); }
+
+.status-bar {
+  height:42px; display:flex; align-items:center;
+  justify-content:space-between; padding:0 20px;
+  flex-shrink:0; position:relative; z-index:10;
+  background:white; transition:background 0.3s;
+}
+.phone.dark .status-bar { background:var(--dark); }
+
+.dynamic-island {
+  position:absolute; top:8px; left:50%; transform:translateX(-50%);
+  width:80px; height:22px; background:#0a0a0a; border-radius:20px; z-index:20;
+}
+
+.status-time { font-size:12px; font-weight:600; color:var(--text); }
+.phone.dark .status-time { color:white; }
+.status-icons { font-size:10px; color:var(--text); }
+.phone.dark .status-icons { color:white; }
+
+.screen {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  scrollbar-width:none; background:white;
+  transition:background 0.3s;
+}
+.screen::-webkit-scrollbar { display:none; }
+.phone.dark .screen { background:var(--dark); }
+
+/* Bottom nav — thin line icons + text */
+.bottom-nav {
+  height:64px; background:white;
+  border-top:1px solid var(--gray-2);
+  display:flex; align-items:center; justify-content:space-around;
+  padding:0 4px 4px; flex-shrink:0;
+  transition:background 0.3s, border-color 0.3s;
+}
+.phone.dark .bottom-nav { background:var(--dark-2); border-top-color:var(--dark-3); }
+
+.nav-item {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer; padding:6px 8px; border-radius:8px;
+  min-width:60px; gap:3px; transition:background 0.15s;
+}
+.nav-icon { width:22px; height:22px; }
+.nav-icon path, .nav-icon rect, .nav-icon circle, .nav-icon line, .nav-icon polyline, .nav-icon polygon {
+  stroke: var(--gray-3); transition: stroke 0.15s;
+}
+.phone.dark .nav-icon path,
+.phone.dark .nav-icon rect,
+.phone.dark .nav-icon circle,
+.phone.dark .nav-icon line,
+.phone.dark .nav-icon polyline,
+.phone.dark .nav-icon polygon { stroke: #3a3a3c; }
+
+.nav-item.active .nav-icon path,
+.nav-item.active .nav-icon rect,
+.nav-item.active .nav-icon circle,
+.nav-item.active .nav-icon line,
+.nav-item.active .nav-icon polyline,
+.nav-item.active .nav-icon polygon { stroke: var(--scarlet); }
+
+.nav-label { font-size:10px; font-weight:500; color:var(--gray-3); letter-spacing:0.1px; }
+.nav-item.active .nav-label { color:var(--scarlet); font-weight:700; }
+.phone.dark .nav-label { color:#3a3a3c; }
+.phone.dark .nav-item.active .nav-label { color:var(--scarlet); }
+
+/* ── ONBOARDING SCREEN ── */
+.onboard-screen {
+  flex:1; display:flex; flex-direction:column;
+  background:white; padding:0;
+  overflow:hidden;
+}
+.phone.dark .onboard-screen { background:var(--dark); }
+
+.onboard-top {
+  background:linear-gradient(160deg, #CC0033 0%, #8a001f 100%);
+  padding:36px 24px 28px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.onboard-logo { font-family:'DM Serif Display',serif; font-size:28px; color:white; }
+.onboard-sub { font-size:13px; color:rgba(255,255,255,0.75); line-height:1.4; }
+
+.onboard-body { flex:1; padding:18px 18px 8px; overflow-y:auto; }
+.onboard-q { font-size:14px; font-weight:600; color:var(--text); margin-bottom:12px; }
+.phone.dark .onboard-q { color:white; }
+
+.interest-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+
+.interest-chip {
+  border-radius:10px; padding:12px 10px;
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer; border:1.5px solid var(--gray-2);
+  background:white; transition:all 0.15s;
+}
+.interest-chip.selected { border-color:var(--scarlet); background:var(--scarlet-dim); }
+.phone.dark .interest-chip { background:var(--dark-2); border-color:var(--dark-3); }
+.phone.dark .interest-chip.selected { background:var(--scarlet-mid); border-color:var(--scarlet); }
+
+.interest-chip-icon { font-size:18px; }
+.interest-chip-name { font-size:11px; font-weight:600; color:var(--text); line-height:1.2; }
+.phone.dark .interest-chip-name { color:white; }
+.interest-chip.selected .interest-chip-name { color:var(--scarlet); }
+
+.onboard-footer { padding:12px 18px 16px; display:flex; flex-direction:column; gap:8px; }
+
+.onboard-cta {
+  background:var(--scarlet); color:white; border:none;
+  border-radius:12px; padding:13px;
+  font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; width:100%;
+}
+.onboard-skip {
+  text-align:center; font-size:12px; color:var(--gray-3);
+  cursor:pointer; font-weight:500; padding:4px;
+}
+.phone.dark .onboard-skip { color:#3a3a3c; }
+
+/* ── HOME ── */
+.home-header { padding:12px 16px 8px; display:flex; justify-content:space-between; align-items:center; }
+.home-title { font-family:'DM Serif Display',serif; font-size:23px; color:var(--text); }
+.home-title span { color:var(--scarlet); }
+.phone.dark .home-title { color:white; }
+
+.avatar {
+  width:30px; height:30px; background:var(--scarlet-dim);
+  border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:11px; color:var(--scarlet); font-weight:700;
+}
+
+/* Personalize banner */
+.personalize-banner {
+  margin:0 14px 10px;
+  background:linear-gradient(120deg, #CC0033 0%, #8a001f 100%);
+  border-radius:12px; padding:12px 14px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.personalize-text { color:white; }
+.personalize-text .p-title { font-size:12px; font-weight:700; }
+.personalize-text .p-sub { font-size:10px; color:rgba(255,255,255,0.75); margin-top:2px; }
+.personalize-btn {
+  background:white; color:var(--scarlet);
+  border:none; border-radius:8px; padding:6px 12px;
+  font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; flex-shrink:0;
+}
+
+/* Calendar */
+.mini-calendar { margin:0 14px 8px; border-radius:13px; overflow:hidden; border:1px solid var(--gray-2); }
+.phone.dark .mini-calendar { border-color:var(--dark-3); }
+
+.cal-header { background:var(--scarlet); padding:7px 12px; display:flex; justify-content:space-between; align-items:center; color:white; }
+.cal-month { font-size:12px; font-weight:600; }
+.cal-nav { display:flex; gap:12px; font-size:12px; cursor:pointer; }
+
+.cal-days-header { display:grid; grid-template-columns:repeat(7,1fr); background:var(--scarlet-dim); padding:4px 5px 2px; }
+.phone.dark .cal-days-header { background:var(--scarlet-mid); }
+.cal-day-name { text-align:center; font-size:8px; font-weight:700; color:var(--scarlet); text-transform:uppercase; }
+
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); padding:2px 5px 5px; gap:1px; background:white; }
+.phone.dark .cal-grid { background:var(--dark-2); }
+
+.cal-cell {
+  aspect-ratio:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  border-radius:6px; cursor:pointer;
+  font-size:10px; font-weight:500; color:var(--text);
+  position:relative; transition:background 0.1s;
+}
+.phone.dark .cal-cell { color:#e5e5e7; }
+.cal-cell:hover { background:var(--gray-1); }
+.phone.dark .cal-cell:hover { background:var(--dark-3); }
+.cal-cell.today { background:var(--scarlet); color:white; font-weight:700; }
+.cal-cell.has-events::after {
+  content:''; position:absolute; bottom:2px;
+  width:3px; height:3px; border-radius:50%; background:var(--scarlet);
+}
+.cal-cell.today.has-events::after { background:white; }
+.cal-cell.empty { opacity:0; pointer-events:none; }
+
+/* Filters — time + paid toggle */
+.filter-section { padding:2px 14px 8px; }
+.filter-row { display:flex; gap:6px; margin-bottom:6px; }
+
+.pill {
+  padding:5px 12px; border-radius:16px;
+  font-size:11px; font-weight:600; white-space:nowrap;
+  cursor:pointer; border:1.5px solid var(--gray-2);
+  color:var(--gray-4); background:white; transition:all 0.15s;
+}
+.phone.dark .pill { border-color:var(--dark-3); color:#555; background:var(--dark-2); }
+.pill.active { background:var(--scarlet); border-color:var(--scarlet); color:white; }
+
+.paid-toggle {
+  display:flex; align-items:center; gap:6px;
+  font-size:10px; font-weight:600; color:var(--gray-3);
+  cursor:pointer; padding:2px 0;
+}
+.phone.dark .paid-toggle { color:#3a3a3c; }
+.paid-toggle.on { color:#b45309; }
+
+.mini-toggle {
+  width:26px; height:15px; border-radius:8px;
+  background:var(--gray-2); position:relative; transition:background 0.2s;
+}
+.phone.dark .mini-toggle { background:var(--dark-3); }
+.mini-toggle.on { background:#f59e0b; }
+.mini-toggle::after {
+  content:''; position:absolute; top:2px; left:2px;
+  width:11px; height:11px; border-radius:50%;
+  background:white; transition:left 0.2s;
+  box-shadow:0 1px 2px rgba(0,0,0,0.2);
+}
+.mini-toggle.on::after { left:13px; }
+
+.date-section { padding:2px 16px 5px; font-size:10px; font-weight:700; color:var(--gray-3); text-transform:uppercase; letter-spacing:0.6px; }
+.phone.dark .date-section { color:#3a3a3c; }
+
+/* Event card */
+.event-card {
+  margin:0 14px 7px; border-radius:11px;
+  border:1px solid var(--gray-2); overflow:hidden;
+  background:white; cursor:pointer; transition:all 0.15s;
+}
+.phone.dark .event-card { background:var(--dark-2); border-color:var(--dark-3); }
+.event-card:active { transform:scale(0.98); }
+
+.event-card-inner { padding:10px 11px; display:flex; gap:9px; align-items:flex-start; }
+
+.event-time-block {
+  min-width:36px; display:flex; flex-direction:column;
+  align-items:center; background:var(--scarlet-dim);
+  border-radius:7px; padding:4px 2px;
+}
+.phone.dark .event-time-block { background:var(--scarlet-mid); }
+.time-hour { font-size:13px; font-weight:700; color:var(--scarlet); line-height:1; }
+.time-ampm { font-size:7px; font-weight:700; color:var(--scarlet); text-transform:uppercase; }
+
+.event-info { flex:1; min-width:0; }
+.event-title { font-size:12px; font-weight:600; color:var(--text); line-height:1.3; margin-bottom:3px; }
+.phone.dark .event-title { color:white; }
+.event-meta { font-size:10px; color:var(--gray-4); margin-bottom:1px; }
+
+.source-badge {
+  display:inline-flex; align-items:center; gap:3px;
+  border-radius:4px; padding:2px 5px;
+  font-size:9px; font-weight:700; margin-top:3px;
+}
+.source-badge.athletics { background:#fff0f3; color:var(--scarlet); }
+.source-badge.rec { background:#eff6ff; color:#1d4ed8; }
+.source-badge.involved { background:#f0fdf4; color:#15803d; }
+
+/* ── EVENT DETAIL ── */
+.detail-header {
+  height:165px; background:linear-gradient(140deg,#CC0033 0%,#7a0020 100%);
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:14px 16px; position:relative; flex-shrink:0;
+}
+.detail-back {
+  position:absolute; top:12px; left:12px; width:28px; height:28px;
+  background:rgba(255,255,255,0.18); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; color:white; cursor:pointer;
+}
+.detail-source { background:rgba(255,255,255,0.18); border-radius:5px; padding:2px 7px; font-size:9px; font-weight:700; color:white; width:fit-content; margin-bottom:5px; }
+.detail-title { font-family:'DM Serif Display',serif; font-size:19px; color:white; line-height:1.2; }
+
+.detail-body { padding:14px 16px; overflow-y:auto; }
+.phone.dark .detail-body { background:var(--dark); }
+
+.detail-row { display:flex; gap:9px; align-items:flex-start; margin-bottom:10px; }
+.detail-icon {
+  width:30px; height:30px; background:var(--gray-1);
+  border-radius:7px; display:flex; align-items:center;
+  justify-content:center; font-size:13px; flex-shrink:0;
+}
+.phone.dark .detail-icon { background:var(--dark-2); }
+.detail-row-label { font-size:9px; color:var(--gray-3); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:1px; }
+.detail-row-value { font-size:12px; color:var(--text); font-weight:500; }
+.phone.dark .detail-row-value { color:white; }
+
+.detail-desc { background:var(--gray-1); border-radius:9px; padding:10px 11px; margin-bottom:10px; font-size:11px; color:var(--gray-4); line-height:1.6; }
+.phone.dark .detail-desc { background:var(--dark-2); color:#888; }
+
+.disclaimer-bar { background:#fffbf0; border-radius:7px; padding:7px 9px; font-size:10px; color:#92400e; margin-bottom:10px; }
+.phone.dark .disclaimer-bar { background:#1a1000; color:#d97706; }
+
+.detail-cta { background:var(--scarlet); color:white; border:none; border-radius:11px; padding:11px; width:100%; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:700; cursor:pointer; }
+
+/* ── SEARCH ── */
+.search-top { padding:10px 14px 8px; }
+.search-page-title { font-family:'DM Serif Display',serif; font-size:23px; color:var(--text); padding:2px 0 8px; }
+.phone.dark .search-page-title { color:white; }
+
+.search-bar-box { background:var(--gray-1); border-radius:10px; padding:8px 11px; display:flex; gap:7px; align-items:center; }
+.phone.dark .search-bar-box { background:var(--dark-2); }
+
+.search-icon { width:14px; height:14px; border:2px solid var(--gray-3); border-radius:50%; position:relative; flex-shrink:0; }
+.search-icon::after { content:''; position:absolute; bottom:-4px; right:-3px; width:4px; height:2px; background:var(--gray-3); transform:rotate(45deg); border-radius:1px; }
+
+.search-bar-box input { background:none; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:12px; color:var(--text); width:100%; }
+.phone.dark .search-bar-box input { color:white; }
+.search-bar-box input::placeholder { color:var(--gray-3); }
+
+.campus-row { display:flex; gap:5px; padding:2px 14px 8px; overflow-x:auto; scrollbar-width:none; }
+.campus-row::-webkit-scrollbar { display:none; }
+
+.campus-chip { padding:4px 11px; border-radius:14px; font-size:10px; font-weight:600; white-space:nowrap; cursor:pointer; border:1.5px solid var(--gray-2); color:var(--gray-4); background:white; flex-shrink:0; }
+.phone.dark .campus-chip { background:var(--dark-2); border-color:var(--dark-3); color:#555; }
+.campus-chip.active { background:var(--dark); border-color:var(--dark); color:white; }
+.phone.dark .campus-chip.active { background:white; border-color:white; color:var(--dark); }
+
+.search-section-label { padding:6px 16px 5px; font-size:12px; font-weight:700; color:var(--text); }
+.phone.dark .search-section-label { color:white; }
+
+.category-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:5px; padding:0 14px; }
+.category-card { border-radius:9px; padding:11px; cursor:pointer; min-height:56px; display:flex; flex-direction:column; justify-content:flex-end; }
+.cat-icon { font-size:16px; margin-bottom:3px; }
+.cat-name { font-size:10px; font-weight:700; color:white; line-height:1.2; }
+.cat-sports { background:linear-gradient(135deg,#CC0033,#7a001f); }
+.cat-arts { background:linear-gradient(135deg,#7c3aed,#3b0764); }
+.cat-wellness { background:linear-gradient(135deg,#059669,#022c22); }
+.cat-cultural { background:linear-gradient(135deg,#d97706,#451a03); }
+.cat-academic { background:linear-gradient(135deg,#1d4ed8,#0f172a); }
+.cat-community { background:linear-gradient(135deg,#db2777,#500724); }
+.cat-social { background:linear-gradient(135deg,#0891b2,#082f49); }
+.cat-rec { background:linear-gradient(135deg,#65a30d,#1a2e05); }
+
+/* ── SAVED ── */
+.saved-header { padding:12px 16px 8px; }
+.saved-title { font-family:'DM Serif Display',serif; font-size:23px; color:var(--text); }
+.phone.dark .saved-title { color:white; }
+
+.saved-tabs { display:flex; border-bottom:1px solid var(--gray-2); margin:0 14px; }
+.phone.dark .saved-tabs { border-color:var(--dark-3); }
+.saved-tab { flex:1; padding:7px 0; text-align:center; font-size:11px; font-weight:600; color:var(--gray-3); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.15s; }
+.saved-tab.active { color:var(--scarlet); border-bottom-color:var(--scarlet); }
+.phone.dark .saved-tab { color:#3a3a3c; }
+.phone.dark .saved-tab.active { color:var(--scarlet); }
+
+.saved-section-label { padding:10px 16px 5px; font-size:10px; font-weight:700; color:var(--gray-3); text-transform:uppercase; letter-spacing:0.6px; }
+.phone.dark .saved-section-label { color:#3a3a3c; }
+
+.saved-event { margin:0 14px 6px; padding:9px 11px; border-radius:9px; border:1px solid var(--gray-2); display:flex; gap:9px; align-items:center; cursor:pointer; background:white; }
+.phone.dark .saved-event { background:var(--dark-2); border-color:var(--dark-3); }
+
+.saved-date-block { min-width:32px; background:var(--scarlet-dim); border-radius:6px; padding:3px 2px; display:flex; flex-direction:column; align-items:center; }
+.phone.dark .saved-date-block { background:var(--scarlet-mid); }
+.saved-date-day { font-size:14px; font-weight:700; color:var(--scarlet); line-height:1; }
+.saved-date-mon { font-size:7px; font-weight:700; color:var(--scarlet); text-transform:uppercase; }
+.saved-event-title { font-size:11px; font-weight:600; color:var(--text); flex:1; }
+.phone.dark .saved-event-title { color:white; }
+.saved-bookmark { font-size:12px; color:var(--scarlet); }
+
+.org-row { display:flex; align-items:center; gap:9px; padding:9px 14px; border-bottom:1px solid var(--gray-1); cursor:pointer; }
+.phone.dark .org-row { border-color:var(--dark-2); }
+.org-avatar { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.org-name { font-size:11px; font-weight:600; color:var(--text); }
+.phone.dark .org-name { color:white; }
+.org-meta { font-size:9px; color:var(--gray-3); margin-top:1px; }
+.org-arrow { font-size:12px; color:var(--gray-3); }
+
+/* ── ALERTS ── */
+.alerts-header { padding:12px 16px 8px; }
+.alerts-title { font-family:'DM Serif Display',serif; font-size:23px; color:var(--text); }
+.phone.dark .alerts-title { color:white; }
+
+.alert-item { display:flex; gap:8px; padding:10px 14px; border-bottom:1px solid var(--gray-1); cursor:pointer; }
+.phone.dark .alert-item { border-color:var(--dark-2); }
+.alert-item.unread { background:#fff5f7; }
+.phone.dark .alert-item.unread { background:#1a0008; }
+
+.alert-dot { width:6px; height:6px; border-radius:50%; background:var(--scarlet); flex-shrink:0; margin-top:5px; }
+.alert-dot.read { background:transparent; }
+
+.alert-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.alert-body { flex:1; }
+.alert-title { font-size:11px; font-weight:600; color:var(--text); line-height:1.3; }
+.phone.dark .alert-title { color:white; }
+.alert-sub { font-size:10px; color:var(--gray-4); margin-top:1px; }
+.alert-time { font-size:9px; color:var(--gray-3); margin-top:2px; }
+
+.alert-settings { margin:10px 14px; background:var(--gray-1); border-radius:11px; overflow:hidden; }
+.phone.dark .alert-settings { background:var(--dark-2); }
+
+.alert-setting-row { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-bottom:1px solid var(--gray-2); font-size:11px; color:var(--text); }
+.phone.dark .alert-setting-row { border-color:var(--dark-3); color:white; }
+.alert-setting-row:last-child { border-bottom:none; }
+
+.toggle { width:32px; height:18px; border-radius:9px; background:var(--scarlet); position:relative; cursor:pointer; }
+.toggle::after { content:''; position:absolute; top:2.5px; right:2.5px; width:13px; height:13px; background:white; border-radius:50%; box-shadow:0 1px 2px rgba(0,0,0,0.2); }
+
+/* ── CATEGORY RESULTS ── */
+.cat-results-header {
+  height:148px; display:flex; flex-direction:column;
+  justify-content:flex-end; padding:14px 16px; position:relative; flex-shrink:0;
+}
+.cat-results-back {
+  position:absolute; top:12px; left:12px; width:28px; height:28px;
+  background:rgba(255,255,255,0.18); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; color:white; cursor:pointer;
+}
+.cat-results-icon { font-size:28px; margin-bottom:5px; }
+.cat-results-title {
+  font-family:'DM Serif Display',serif; font-size:20px;
+  color:white; line-height:1.2; margin-bottom:2px;
+}
+.cat-results-count { font-size:11px; color:rgba(255,255,255,0.7); }
+
+.cat-filter-bar {
+  padding:8px 14px 6px; display:flex; gap:6px;
+  border-bottom:1px solid var(--gray-2); overflow-x:auto; scrollbar-width:none;
+}
+.cat-filter-bar::-webkit-scrollbar { display:none; }
+.phone.dark .cat-filter-bar { border-color:var(--dark-3); }
+
+/* ── ORG PROFILE ── */
+.org-profile-top {
+  height:110px;
+  background:linear-gradient(140deg,#1c1c1e 0%,#3a3a3c 100%);
+  position:relative; display:flex; align-items:flex-end; padding:10px 16px;
+}
+.phone.dark .org-profile-top {
+  background:linear-gradient(140deg,#0f0f0f 0%,#2c2c2e 100%);
+}
+.org-profile-back {
+  position:absolute; top:12px; left:12px; width:28px; height:28px;
+  background:rgba(255,255,255,0.12); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; color:white; cursor:pointer;
+}
+.org-profile-badge-wrap {
+  position:absolute; bottom:-22px; left:16px;
+  width:46px; height:46px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+  border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+.phone.dark .org-profile-badge-wrap { border-color:var(--dark); }
+
+.org-profile-info {
+  padding:32px 16px 10px; display:flex;
+  justify-content:space-between; align-items:flex-start;
+}
+.org-profile-name {
+  font-family:'DM Serif Display',serif; font-size:18px;
+  color:var(--text); line-height:1.2;
+}
+.phone.dark .org-profile-name { color:white; }
+.org-profile-source { font-size:10px; color:var(--gray-3); margin-top:2px; }
+
+.follow-btn {
+  background:var(--scarlet); color:white; border:none;
+  border-radius:20px; padding:7px 18px;
+  font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; flex-shrink:0; transition:all 0.15s;
+}
+.follow-btn.following {
+  background:white; color:var(--scarlet);
+  border:1.5px solid var(--scarlet);
+}
+.phone.dark .follow-btn.following {
+  background:var(--dark-2); color:var(--scarlet);
+  border-color:var(--scarlet);
+}
+
+.org-stats-row {
+  display:flex; gap:0; border-top:1px solid var(--gray-2);
+  border-bottom:1px solid var(--gray-2); margin:0 0 4px;
+}
+.phone.dark .org-stats-row { border-color:var(--dark-3); }
+.org-stat {
+  flex:1; padding:9px 0; text-align:center;
+  border-right:1px solid var(--gray-2);
+}
+.phone.dark .org-stat { border-color:var(--dark-3); }
+.org-stat:last-child { border-right:none; }
+.org-stat-val { font-size:14px; font-weight:700; color:var(--text); }
+.phone.dark .org-stat-val { color:white; }
+.org-stat-label { font-size:9px; color:var(--gray-3); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; margin-top:1px; }
+</style>
+</head>
+<body>
+
+<div style="text-align:center">
+  <h1>RU Events <span>Hub</span></h1>
+  <p class="subtitle">Prototype v6 — SVG nav icons, two-row category filters, History tab</p>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="toggleDark()" id="darkBtn">🌙 Dark Mode</button>
+</div>
+
+<!-- ROW 1: Onboarding + Home + Detail -->
+<div class="phone-row">
+
+  <!-- ONBOARDING -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Onboarding</div>
+    <div class="phone" id="p-onboard">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="onboard-screen">
+        <div class="onboard-top">
+          <div class="onboard-logo">Events <span style="font-style:italic">Hub</span></div>
+          <div class="onboard-sub">Your campus, all in one place.<br>What are you into?</div>
+        </div>
+        <div class="onboard-body">
+          <div class="onboard-q">Pick your interests to personalize your feed.</div>
+          <div class="interest-grid">
+            <div class="interest-chip selected"><div class="interest-chip-icon">🏆</div><div class="interest-chip-name">Sports & Athletics</div></div>
+            <div class="interest-chip"><div class="interest-chip-icon">🎭</div><div class="interest-chip-name">Arts & Performance</div></div>
+            <div class="interest-chip selected"><div class="interest-chip-icon">🧘</div><div class="interest-chip-name">Wellness & Fitness</div></div>
+            <div class="interest-chip"><div class="interest-chip-icon">🌍</div><div class="interest-chip-name">Cultural & Identity</div></div>
+            <div class="interest-chip"><div class="interest-chip-icon">📚</div><div class="interest-chip-name">Academic & Prof.</div></div>
+            <div class="interest-chip"><div class="interest-chip-icon">🤝</div><div class="interest-chip-name">Community</div></div>
+            <div class="interest-chip selected"><div class="interest-chip-icon">🎉</div><div class="interest-chip-name">Social & Networking</div></div>
+            <div class="interest-chip"><div class="interest-chip-icon">⚽</div><div class="interest-chip-name">Rec & Intramurals</div></div>
+          </div>
+        </div>
+        <div class="onboard-footer">
+          <button class="onboard-cta">Let's go →</button>
+          <div class="onboard-skip">Skip for now</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Home</div>
+    <div class="phone" id="p-home">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+        <div class="home-header">
+          <div class="home-title">Events <span>Hub</span></div>
+          <div class="avatar">GG</div>
+        </div>
+
+        <!-- Personalize banner (shows for new users) -->
+        <div class="personalize-banner">
+          <div class="personalize-text">
+            <div class="p-title">Personalize your feed</div>
+            <div class="p-sub">Follow orgs and set interests to get a tailored digest</div>
+          </div>
+          <button class="personalize-btn">Set up</button>
+        </div>
+
+        <div class="mini-calendar">
+          <div class="cal-header"><span class="cal-month">February 2026</span><div class="cal-nav">‹ ›</div></div>
+          <div class="cal-days-header">
+            <div class="cal-day-name">S</div><div class="cal-day-name">M</div><div class="cal-day-name">T</div><div class="cal-day-name">W</div><div class="cal-day-name">T</div><div class="cal-day-name">F</div><div class="cal-day-name">S</div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div><div class="cal-cell empty"></div>
+            <div class="cal-cell has-events">1</div><div class="cal-cell has-events">2</div><div class="cal-cell">3</div><div class="cal-cell has-events">4</div><div class="cal-cell has-events">5</div><div class="cal-cell has-events">6</div><div class="cal-cell has-events">7</div>
+            <div class="cal-cell">8</div><div class="cal-cell has-events">9</div><div class="cal-cell">10</div><div class="cal-cell has-events">11</div><div class="cal-cell has-events">12</div><div class="cal-cell has-events">13</div><div class="cal-cell">14</div>
+            <div class="cal-cell has-events">15</div><div class="cal-cell has-events">16</div><div class="cal-cell has-events">17</div><div class="cal-cell has-events">18</div><div class="cal-cell has-events">19</div><div class="cal-cell has-events">20</div><div class="cal-cell has-events">21</div>
+            <div class="cal-cell has-events">22</div><div class="cal-cell has-events">23</div><div class="cal-cell has-events">24</div><div class="cal-cell has-events">25</div><div class="cal-cell today has-events">26</div><div class="cal-cell has-events">27</div><div class="cal-cell">28</div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-row">
+            <div class="pill active">Today</div>
+            <div class="pill">This Week</div>
+            <div class="pill">Weekend</div>
+          </div>
+          <div class="paid-toggle" id="paidToggle" onclick="togglePaid()">
+            <div class="mini-toggle" id="paidMini"></div>
+            <span id="paidLabel">Show paid events only</span>
+          </div>
+        </div>
+
+        <div class="date-section">Thursday, Feb 26</div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">7</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Men's Basketball vs. Indiana</div>
+              <div class="event-meta">🏟 Jersey Mike's Arena · Livingston</div>
+              <div class="source-badge athletics">● ScarletKnights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">6</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Latin Dance Social — Beginners Welcome</div>
+              <div class="event-meta">📍 College Ave Student Center</div>
+              <div class="source-badge involved">● getINVOLVED</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">5</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Werblin Pool Open Swim</div>
+              <div class="event-meta">🏊 Werblin Rec Center · Busch</div>
+              <div class="source-badge rec">● Recreation</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">8</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">RU Film Club Screening: Parasite</div>
+              <div class="event-meta">🎬 Scott Hall · College Ave</div>
+              <div class="source-badge involved">● getINVOLVED</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-wrapper">
+    <div class="phone-label">Event Detail</div>
+    <div class="phone" id="p-detail">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+        <div class="detail-header">
+          <div class="detail-back">←</div>
+          <div class="detail-source">● ScarletKnights</div>
+          <div class="detail-title">Men's Basketball vs. Indiana</div>
+        </div>
+        <div class="detail-body">
+          <div class="detail-row">
+            <div class="detail-icon">📅</div>
+            <div><div class="detail-row-label">Date & Time</div><div class="detail-row-value">Thursday, Feb 26 · 7:00 PM</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon">📍</div>
+            <div><div class="detail-row-label">Location</div><div class="detail-row-value">Jersey Mike's Arena, Livingston</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon">🏷</div>
+            <div><div class="detail-row-label">Category · Cost</div><div class="detail-row-value">Sports & Athletics · Free with RU ID</div></div>
+          </div>
+          <div class="detail-desc">
+            Rutgers Men's Basketball hosts Indiana in a Big Ten matchup. Students with a valid Rutgers ID receive free admission. Doors open at 6:00 PM.
+          </div>
+          <div class="disclaimer-bar">⚠ Always verify details on the original source before attending.</div>
+          <button class="detail-cta">View on ScarletKnights.com ↗</button>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ROW 2: Search + Saved + Alerts -->
+<div class="phone-row">
+
+  <!-- SEARCH -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Search</div>
+    <div class="phone" id="p-search">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+        <div class="search-top">
+          <div class="search-page-title">Discover</div>
+          <div class="search-bar-box">
+            <div class="search-icon"></div>
+            <input type="text" placeholder="Search events, venues, orgs...">
+          </div>
+        </div>
+        <div class="campus-row">
+          <div class="campus-chip active">All</div>
+          <div class="campus-chip">College Ave</div>
+          <div class="campus-chip">Livingston</div>
+          <div class="campus-chip">Busch</div>
+          <div class="campus-chip">Cook/Doug</div>
+          <div class="campus-chip">Online</div>
+        </div>
+        <div class="search-section-label">Browse by Category</div>
+        <div class="category-grid">
+          <div class="category-card cat-sports"><div class="cat-icon">🏆</div><div class="cat-name">Sports & Athletics</div></div>
+          <div class="category-card cat-arts"><div class="cat-icon">🎭</div><div class="cat-name">Arts & Performance</div></div>
+          <div class="category-card cat-wellness"><div class="cat-icon">🧘</div><div class="cat-name">Wellness & Fitness</div></div>
+          <div class="category-card cat-cultural"><div class="cat-icon">🌍</div><div class="cat-name">Cultural & Identity</div></div>
+          <div class="category-card cat-academic"><div class="cat-icon">📚</div><div class="cat-name">Academic & Prof.</div></div>
+          <div class="category-card cat-community"><div class="cat-icon">🤝</div><div class="cat-name">Community</div></div>
+          <div class="category-card cat-social"><div class="cat-icon">🎉</div><div class="cat-name">Social & Networking</div></div>
+          <div class="category-card cat-rec"><div class="cat-icon">⚽</div><div class="cat-name">Rec & Intramurals</div></div>
+        </div>
+        <div style="height:12px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Saved</div>
+    <div class="phone" id="p-saved">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+        <div class="saved-header"><div class="saved-title">Saved</div></div>
+        <div class="saved-tabs">
+          <div class="saved-tab active">Events</div>
+          <div class="saved-tab">Following</div>
+          <div class="saved-tab">History</div>
+        </div>
+
+        <div class="saved-section-label">Upcoming</div>
+
+        <div class="saved-event">
+          <div class="saved-date-block"><div class="saved-date-day">26</div><div class="saved-date-mon">Feb</div></div>
+          <div class="saved-event-title">Men's Basketball vs. Indiana</div>
+          <div class="saved-bookmark">🔖</div>
+        </div>
+        <div class="saved-event">
+          <div class="saved-date-block"><div class="saved-date-day">28</div><div class="saved-date-mon">Feb</div></div>
+          <div class="saved-event-title">RU Hackathon 2026 — Opening Night</div>
+          <div class="saved-bookmark">🔖</div>
+        </div>
+        <div class="saved-event">
+          <div class="saved-date-block"><div class="saved-date-day">3</div><div class="saved-date-mon">Mar</div></div>
+          <div class="saved-event-title">Werblin Rock Climbing Open Gym</div>
+          <div class="saved-bookmark">🔖</div>
+        </div>
+
+        <div class="saved-section-label" style="margin-top:4px">Orgs & Teams You Follow</div>
+
+        <div class="org-row">
+          <div class="org-avatar" style="background:#fff0f3">🔴</div>
+          <div style="flex:1"><div class="org-name">Rutgers Men's Basketball</div><div class="org-meta">ScarletKnights · 3 upcoming</div></div>
+          <div class="org-arrow">›</div>
+        </div>
+        <div class="org-row">
+          <div class="org-avatar" style="background:#f0fdf4">🟢</div>
+          <div style="flex:1"><div class="org-name">Latin Dance Club</div><div class="org-meta">getINVOLVED · 1 upcoming</div></div>
+          <div class="org-arrow">›</div>
+        </div>
+        <div class="org-row">
+          <div class="org-avatar" style="background:#eff6ff">🔵</div>
+          <div style="flex:1"><div class="org-name">Werblin Rec Center</div><div class="org-meta">Recreation · 8 upcoming</div></div>
+          <div class="org-arrow">›</div>
+        </div>
+        <div style="height:12px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Alerts</div>
+    <div class="phone" id="p-alerts">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+        <div class="alerts-header"><div class="alerts-title">Alerts</div></div>
+
+        <div class="saved-section-label">Recent</div>
+
+        <div class="alert-item unread">
+          <div class="alert-dot"></div>
+          <div class="alert-icon" style="background:#fff0f3">🏀</div>
+          <div class="alert-body">
+            <div class="alert-title">Tonight: Men's Basketball vs. Indiana at 7 PM</div>
+            <div class="alert-sub">Jersey Mike's Arena · Livingston</div>
+            <div class="alert-time">2 hours ago</div>
+          </div>
+        </div>
+
+        <div class="alert-item unread">
+          <div class="alert-dot"></div>
+          <div class="alert-icon" style="background:#f0fdf4">🎉</div>
+          <div class="alert-body">
+            <div class="alert-title">Latin Dance Club posted a new event</div>
+            <div class="alert-sub">Salsa Night — March 5 · College Ave</div>
+            <div class="alert-time">5 hours ago</div>
+          </div>
+        </div>
+
+        <div class="alert-item">
+          <div class="alert-dot read"></div>
+          <div class="alert-icon" style="background:#fffbeb">⚠️</div>
+          <div class="alert-body">
+            <div class="alert-title">Saved event time changed</div>
+            <div class="alert-sub">Werblin Open Swim moved to 5:30 PM</div>
+            <div class="alert-time">Yesterday</div>
+          </div>
+        </div>
+
+        <div class="alert-item">
+          <div class="alert-dot read"></div>
+          <div class="alert-icon" style="background:#f0fdf4">📋</div>
+          <div class="alert-body">
+            <div class="alert-title">Your weekly digest is ready</div>
+            <div class="alert-sub">14 events matching your interests this week</div>
+            <div class="alert-time">Monday</div>
+          </div>
+        </div>
+
+        <div class="saved-section-label" style="margin-top:6px">Notification Settings</div>
+
+        <div class="alert-settings">
+          <div class="alert-setting-row">
+            <span>Orgs & teams you follow</span>
+            <div class="toggle"></div>
+          </div>
+          <div class="alert-setting-row">
+            <span>Saved event changes</span>
+            <div class="toggle"></div>
+          </div>
+          <div class="alert-setting-row">
+            <span>Weekly digest</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ROW 3: Category Results + Org Profile -->
+<div class="phone-row">
+
+  <!-- CATEGORY RESULTS — Sports & Athletics -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Category Results</div>
+    <div class="phone" id="p-catresults">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+        <!-- Gradient header using catSports colors -->
+        <div class="cat-results-header" style="background:linear-gradient(140deg,#CC0033 0%,#7a001f 100%)">
+          <div class="cat-results-back">←</div>
+          <div class="cat-results-icon">🏆</div>
+          <div class="cat-results-title">Sports & Athletics</div>
+          <div class="cat-results-count">18 events this week</div>
+        </div>
+
+        <!-- Time filter row -->
+        <div class="cat-filter-bar">
+          <div class="pill active">Today</div>
+          <div class="pill">This Week</div>
+          <div class="pill">Weekend</div>
+        </div>
+        <!-- Campus filter row -->
+        <div class="cat-filter-bar" style="border-bottom:none; padding-top:4px; padding-bottom:8px;">
+          <div class="pill active">All Campuses</div>
+          <div class="pill">College Ave</div>
+          <div class="pill">Livingston</div>
+          <div class="pill">Busch</div>
+          <div class="pill">Cook/Doug</div>
+        </div>
+
+        <div class="date-section" style="padding-top:10px">Thursday, Feb 26</div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">7</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Men's Basketball vs. Indiana</div>
+              <div class="event-meta">🏟 Jersey Mike's Arena · Livingston</div>
+              <div class="source-badge athletics">● ScarletKnights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">6</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Women's Gymnastics — Big Ten Qualifier</div>
+              <div class="event-meta">🏟 Jersey Mike's Arena · Livingston</div>
+              <div class="source-badge athletics">● ScarletKnights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="date-section">Friday, Feb 27</div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">4</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Men's Lacrosse vs. Princeton</div>
+              <div class="event-meta">🏟 SHI Stadium · Busch</div>
+              <div class="source-badge athletics">● ScarletKnights</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">5</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Werblin Open Swim</div>
+              <div class="event-meta">🏊 Werblin Rec Center · Busch</div>
+              <div class="source-badge rec">● Recreation</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORG PROFILE — Latin Dance Club -->
+  <div class="phone-wrapper">
+    <div class="phone-label">Org Profile</div>
+    <div class="phone" id="p-orgprofile">
+      <div class="status-bar"><span class="status-time">9:41</span><div class="dynamic-island"></div><span class="status-icons">●●● 🔋</span></div>
+      <div class="screen">
+
+        <!-- Header banner -->
+        <div class="org-profile-top">
+          <div class="org-profile-back">←</div>
+          <!-- Org avatar badge overlapping banner bottom -->
+          <div class="org-profile-badge-wrap" style="background:#f0fdf4">💃</div>
+        </div>
+
+        <!-- Org name + follow button -->
+        <div class="org-profile-info">
+          <div>
+            <div class="org-profile-name">Latin Dance Club</div>
+            <div class="org-profile-source">getINVOLVED · Social & Networking</div>
+          </div>
+          <button class="follow-btn" id="followBtn" onclick="toggleFollow()">+ Follow</button>
+        </div>
+
+        <!-- Stats row -->
+        <div class="org-stats-row">
+          <div class="org-stat">
+            <div class="org-stat-val">5</div>
+            <div class="org-stat-label">Upcoming</div>
+          </div>
+          <div class="org-stat">
+            <div class="org-stat-val">312</div>
+            <div class="org-stat-label">Members</div>
+          </div>
+          <div class="org-stat">
+            <div class="org-stat-val">College Ave</div>
+            <div class="org-stat-label">Primary Campus</div>
+          </div>
+        </div>
+
+        <div class="date-section" style="padding-top:10px">Upcoming Events</div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">6</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Latin Dance Social — Beginners Welcome</div>
+              <div class="event-meta">📍 College Ave Student Center</div>
+              <div class="source-badge involved">● getINVOLVED</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block" style="min-width:36px; display:flex; flex-direction:column; align-items:center; background:var(--scarlet-dim); border-radius:7px; padding:4px 2px;">
+              <div class="time-hour">7</div><div class="time-ampm" style="font-size:7px; font-weight:700; color:var(--scarlet); text-transform:uppercase;">PM</div>
+            </div>
+            <div class="event-info">
+              <div class="event-title">Salsa Night — All levels</div>
+              <div class="event-meta">📍 College Ave Student Center · Mar 5</div>
+              <div class="source-badge involved">● getINVOLVED</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-inner">
+            <div class="event-time-block"><div class="time-hour">6</div><div class="time-ampm">PM</div></div>
+            <div class="event-info">
+              <div class="event-title">Bachata Workshop — Intermediate</div>
+              <div class="event-meta">📍 Tillett Hall · Livingston · Mar 12</div>
+              <div class="source-badge involved">● getINVOLVED</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          <div class="nav-label">Home</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <div class="nav-label">Search</div>
+        </div>
+        <div class="nav-item active">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+          <div class="nav-label">Saved</div>
+        </div>
+        <div class="nav-item">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div class="nav-label">Alerts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let isDark = false;
+  let paidOn = false;
+  let isFollowing = false;
+
+  function toggleDark() {
+    isDark = !isDark;
+    document.querySelectorAll('.phone').forEach(p => p.classList.toggle('dark', isDark));
+    document.getElementById('darkBtn').textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  }
+
+  function togglePaid() {
+    paidOn = !paidOn;
+    document.getElementById('paidMini').classList.toggle('on', paidOn);
+    document.getElementById('paidToggle').classList.toggle('on', paidOn);
+    document.getElementById('paidLabel').textContent = paidOn ? 'Paid events only' : 'Show paid events only';
+  }
+
+  // Interest chip toggle
+  document.querySelectorAll('.interest-chip').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  });
+
+  function toggleFollow() {
+    isFollowing = !isFollowing;
+    const btn = document.getElementById('followBtn');
+    btn.textContent = isFollowing ? '✓ Following' : '+ Follow';
+    btn.classList.toggle('following', isFollowing);
+  }
+</script>
+</body>
+</html>
