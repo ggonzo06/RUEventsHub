@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support — PulseU</title>
+<meta name="description" content="Get help with PulseU. FAQs, contact info, and everything you need.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --scarlet: #CC0033;
+  --scarlet-dark: #8a001f;
+  --scarlet-dim: rgba(204, 0, 51, 0.08);
+  --dark: #0f0f0f;
+  --dark-2: #1a1a1a;
+  --dark-3: #2a2a2a;
+  --gray: #888;
+  --light: #f8f8f8;
+  --white: #ffffff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--dark);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 20px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(15, 15, 15, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px; color: var(--white);
+  text-decoration: none; letter-spacing: -0.3px;
+}
+.nav-logo span { color: var(--scarlet); font-style: italic; }
+.nav-links {
+  display: flex; align-items: center; gap: 36px; list-style: none;
+}
+.nav-links a {
+  font-size: 14px; font-weight: 500; color: var(--gray);
+  text-decoration: none; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a.active { color: var(--white); }
+.nav-cta {
+  background: var(--scarlet); color: white !important;
+  padding: 9px 20px; border-radius: 100px;
+  font-weight: 600 !important; font-size: 13px !important;
+  transition: background 0.2s !important;
+}
+.nav-cta:hover { background: var(--scarlet-dark) !important; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  padding: 140px 48px 64px;
+  max-width: 800px; margin: 0 auto;
+  text-align: center;
+}
+.page-header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 6vw, 60px);
+  letter-spacing: -1.5px; line-height: 1.1;
+}
+.page-header h1 em { color: var(--scarlet); font-style: italic; }
+.page-header p {
+  color: var(--gray); font-size: 17px;
+  line-height: 1.6; margin-top: 16px;
+}
+
+/* ── CONTACT CARD ── */
+.contact-section {
+  max-width: 800px; margin: 0 auto 64px;
+  padding: 0 48px;
+}
+
+.contact-card {
+  background: linear-gradient(135deg, rgba(204,0,51,0.12) 0%, rgba(138,0,31,0.08) 100%);
+  border: 1px solid rgba(204,0,51,0.25);
+  border-radius: 20px; padding: 40px;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 24px; flex-wrap: wrap;
+}
+.contact-card-left h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; margin-bottom: 8px;
+}
+.contact-card-left p { color: var(--gray); font-size: 14px; line-height: 1.6; max-width: 400px; }
+
+.contact-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--scarlet); color: white;
+  padding: 13px 28px; border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 700;
+  text-decoration: none; transition: all 0.2s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.contact-btn:hover { background: var(--scarlet-dark); transform: translateY(-1px); }
+
+/* ── FAQ ── */
+.faq-section {
+  max-width: 800px; margin: 0 auto 80px;
+  padding: 0 48px;
+}
+
+.faq-section h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px; letter-spacing: -0.5px;
+  margin-bottom: 32px;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 24px 0;
+}
+.faq-item:first-of-type { border-top: 1px solid rgba(255,255,255,0.06); }
+
+.faq-q {
+  font-size: 15px; font-weight: 600; color: var(--white);
+  cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center; gap: 16px;
+  user-select: none;
+}
+.faq-q:hover { color: rgba(255,255,255,0.8); }
+
+.faq-chevron {
+  width: 20px; height: 20px; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 50%; display: flex;
+  align-items: center; justify-content: center;
+  transition: transform 0.2s, border-color 0.2s;
+  font-size: 11px; color: var(--gray);
+}
+
+.faq-item.open .faq-chevron {
+  transform: rotate(180deg);
+  border-color: var(--scarlet); color: var(--scarlet);
+}
+
+.faq-a {
+  font-size: 14px; color: var(--gray); line-height: 1.7;
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.faq-item.open .faq-a {
+  max-height: 300px; padding-top: 14px;
+}
+
+.faq-a a { color: #ff6680; text-decoration: none; }
+.faq-a a:hover { text-decoration: underline; }
+
+/* ── INFO CARDS ── */
+.info-grid {
+  max-width: 800px; margin: 0 auto 80px;
+  padding: 0 48px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+.info-card {
+  background: var(--dark-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 24px;
+}
+.info-card h3 {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--gray); margin-bottom: 12px;
+}
+.info-card p, .info-card a {
+  font-size: 14px; color: var(--white); line-height: 1.6;
+  text-decoration: none;
+}
+.info-card a:hover { color: #ff6680; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 40px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; color: var(--white); text-decoration: none;
+}
+.footer-logo span { color: var(--scarlet); font-style: italic; }
+.footer-links {
+  display: flex; gap: 28px; list-style: none;
+}
+.footer-links a {
+  font-size: 13px; color: var(--gray);
+  text-decoration: none; transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--white); }
+.footer-copy {
+  font-size: 12px; color: rgba(255,255,255,0.25);
+  width: 100%; text-align: center; margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  .nav-links { gap: 20px; }
+  .nav-links li:not(:last-child) { display: none; }
+  .page-header, .contact-section, .faq-section, .info-grid { padding: 0 24px; }
+  .page-header { padding-top: 110px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .contact-card { flex-direction: column; }
+  footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Pulse<span>U</span></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="support.html" class="active">Support</a></li>
+    <li><a href="privacy-policy-pulseu.html">Privacy</a></li>
+    <li><a href="#" class="nav-cta">Download on iOS</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <h1>We're here<br><em>to help.</em></h1>
+  <p>Have a question about PulseU? Found something wrong with an event? We'd love to hear from you.</p>
+</div>
+
+<!-- CONTACT CARD -->
+<div class="contact-section">
+  <div class="contact-card">
+    <div class="contact-card-left">
+      <h2>Get in touch</h2>
+      <p>For bug reports, incorrect event info, general feedback, or anything else — email us directly. We're a small team and we read everything.</p>
+    </div>
+    <a href="mailto:pulseu.app@gmail.com" class="contact-btn">
+      ✉ pulseu.app@gmail.com
+    </a>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <h2>Frequently asked questions</h2>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Is PulseU an official Rutgers app?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">No. PulseU is an independent student-built app. It aggregates publicly available event information from official Rutgers sources but is not affiliated with, endorsed by, or operated by Rutgers University. Always verify event details on the original source page linked in each listing.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Why is an event showing the wrong time or location?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">PulseU pulls data from source websites every few hours. If an event was updated recently, there may be a short delay before the change appears. Always tap "View Original" on the event detail screen to check the most current information directly from the source. If something looks persistently wrong, please <a href="mailto:pulseu.app@gmail.com">email us</a> and we'll look into it.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Why is an event from my org missing from the app?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">PulseU only shows events that are publicly listed on the source platforms (getINVOLVED, Recreation, ScarletKnights, Mason Gross, and Rutgers New Brunswick Events). If your event is published publicly on one of those platforms and still isn't appearing, email us at pulseu.app@gmail.com and we'll investigate.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Does PulseU collect my personal data?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">No. PulseU does not require an account and does not collect personal information. Your saved events, followed orgs, and interest preferences are stored locally on your device only — they are never sent to our servers. See our <a href="privacy-policy-pulseu.html">Privacy Policy</a> for the full details.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Is PulseU available on Android?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">Not yet. PulseU is currently iOS only. Android support is something we're considering for a future version depending on how the launch goes.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      How often is the event data updated?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">Our backend scraper runs automatically every 6 hours, pulling the latest events from all connected sources. For time-sensitive events, we recommend tapping "View Original" to confirm details directly with the source.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      I found a bug. How do I report it?
+      <div class="faq-chevron">▼</div>
+    </div>
+    <div class="faq-a">Email us at <a href="mailto:pulseu.app@gmail.com">pulseu.app@gmail.com</a> with a description of what happened and which screen you were on. If you can include a screenshot that helps a lot. We take every bug report seriously.</div>
+  </div>
+
+</div>
+
+<!-- INFO CARDS -->
+<div class="info-grid">
+  <div class="info-card">
+    <h3>Email</h3>
+    <a href="mailto:pulseu.app@gmail.com">pulseu.app@gmail.com</a>
+  </div>
+  <div class="info-card">
+    <h3>Response time</h3>
+    <p>We aim to reply within 48 hours.</p>
+  </div>
+  <div class="info-card">
+    <h3>Privacy Policy</h3>
+    <a href="privacy-policy-pulseu.html">Read our Privacy Policy →</a>
+  </div>
+  <div class="info-card">
+    <h3>Disclaimer</h3>
+    <p>Not an official Rutgers product. Always verify events on the original source.</p>
+  </div>
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Pulse<span>U</span></a>
+  <ul class="footer-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy-policy-pulseu.html">Privacy Policy</a></li>
+    <li><a href="mailto:pulseu.app@gmail.com">Contact</a></li>
+  </ul>
+  <p class="footer-copy">PulseU is not affiliated with or endorsed by Rutgers, The State University of New Jersey. © 2026 PulseU. All rights reserved.</p>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+</script>
+
+</body>
+</html>
